@@ -1,0 +1,1 @@
+# equity_strategy_simulator
