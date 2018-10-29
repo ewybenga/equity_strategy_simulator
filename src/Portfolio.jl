@@ -1,5 +1,7 @@
-module Portfolio
+module PortfolioMod
   using Dates
+  include("./StockTicker.jl")
+  using .StockTickerMod
 
   """
       Portfolio(holdings, capital)
@@ -9,7 +11,7 @@ module Portfolio
   """
 
   mutable struct Portfolio
-      holdings::Dict{Ticker, Float64}
+      holdings::Dict{StockTicker, Float64}
       capital::Float64
   end
 

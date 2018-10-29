@@ -2,8 +2,11 @@ module StockTickerMod
 
     #using FinData
     #import datasrc
+    #temporary until datasrc is figured out
+    function validTicker(exchange::String, symbol::String)
+        return true
+    end
 
-    datasrc = nothing
 
     """
         StockTicker(name)
@@ -22,12 +25,12 @@ module StockTickerMod
         symbol::String
         function StockTicker(exchange, symbol)
             # Check whether the ticker exists in the data source
-            tickerAvailable = datasrc.validTicker()
+            tickerAvailable = validTicker(exchange, symbol)
             # If not return an error
             if !tickerAvailable
                 error("Information for this ticker is not available.")
             else
-                return StockTicker(exchange, symbol)
+                return new(exchange, symbol)
             end
         end
     end
