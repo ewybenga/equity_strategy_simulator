@@ -1,10 +1,10 @@
 module StockTickerMod
-
+    using Dates
     #using FinData
     #import datasrc
     #temporary until datasrc is figured out
     function validTicker(exchange::String, symbol::String)
-        return true
+        return true, Date(2000, 1, 1), Date(2018, 1, 1)
     end
 
 
@@ -23,14 +23,16 @@ module StockTickerMod
     struct StockTicker
         exchange::String
         symbol::String
+        start_date::Date
+        end_date:: Date
         function StockTicker(exchange, symbol)
             # Check whether the ticker exists in the data source
-            tickerAvailable = validTicker(exchange, symbol)
+            tickerAvailable, start_date, end_date = validTicker(exchange, symbol)
             # If not return an error
             if !tickerAvailable
                 error("Information for this ticker is not available.")
             else
-                return new(exchange, symbol)
+                return new(exchange, symbol, start_date, end_date)
             end
         end
     end
