@@ -25,8 +25,8 @@ module MarketDBMod
           ____________________________________________________________________
     NAME | date   |    ticker   |    primexch    |   divamt    |    prc      |
          |________|_____________|________________|_____________|_____________|
-    TYPE | Date   |    String   |     String     |  Float64    |   Float64   |
-         |________|_____________|________________|_____________|_____________|
+    TYPE | Date   |    String   |     String     |  Float64    | U{Missing,  |
+         |________|_____________|________________|_____________|___Float64}__|
 
     """
     function processData(filepath)
@@ -46,7 +46,7 @@ module MarketDBMod
         # replace empty prices with missing
         df[:prc] = replaceEmpty.(df[:prc], missing)
         # delete unnecessary columns
-        extraCols = [n for n in names(df) if !any(x->x==n, [:date, :ticker, :divamt, :prc])]
+        extraCols = [n for n in names(df) if !any(x->x==n, [:date, :ticker, :divamt, :primexch, :prc])]
         delete!(df, extraCols)
         return df
     end
