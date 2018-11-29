@@ -15,7 +15,7 @@ module MarketDBQueryMod
     date: Date you want the price of the ticker at
     ticker: A StockTicker object containing the exchange and symbol of the ticker
     """
-    function query(data::MarketDB, date::Date, ticker::StockTicker, column::String)
+    function query(data::MarketDB, date::Date, ticker::StockTicker, column::Symbol)
         #error handling whether date is outside the ticker start and end range
             #if out of bounds throw BoundsError
         #query db
@@ -33,7 +33,7 @@ module MarketDBQueryMod
     end_date: Date you want the price of the ticker ending at
     ticker: A StockTicker object containing the exchange and symbol of the ticker
     """
-    function queryRange(data::MarketDB, start_date::Date, end_date::Date,  ticker::StockTicker, column::String)
+    function queryRange(data::MarketDB, start_date::Date, end_date::Date,  ticker::StockTicker, column::Symbol)
         #error handling whether date is outside the ticker start and end range
             #if out of bounds throw BoundsError
         #query db

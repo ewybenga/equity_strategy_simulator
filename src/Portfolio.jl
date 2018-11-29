@@ -27,7 +27,7 @@ module PortfolioMod
   function buy(portfolio::Portfolio, stock::StockTicker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
     # get the value of the stock at the given date
     try
-      price = query(data, date, stock)
+      price = query(data, date, stock, :prc)
     catch e
       # if the value cannot be found print the error statement and return the
       # portfolio unchanged
@@ -70,7 +70,7 @@ module PortfolioMod
     end
     # get the value of the stock at the given date
     try
-      price = query(data, date, stock)
+      price = query(data, date, stock, :prc)
     catch e
       # if the value cannot be found print the error statement and return the
       # portfolio unchanged
