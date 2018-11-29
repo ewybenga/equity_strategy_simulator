@@ -2,6 +2,10 @@ module PortfolioMod
   using Dates
   include("./StockTicker.jl")
   using .StockTickerMod
+  include("./MarketDB.jl")
+  using .MarketDBMod
+  include("./MarketDBQuery.jl")
+  using .MarketDBQueryMod
 
   """
       Portfolio(holdings, capital)
@@ -14,20 +18,6 @@ module PortfolioMod
       capital::Float64
   end
 
-
-
-  """
-    PortfolioState(portfolio, start_date, current_date)
-
-  The PortfolioState object contains a portfolio as well as the start_date of the period, used to compute
-  information such as returns over time, and the current_date. The PortfolioState represents the portfolio's
-  holdings at a given place in time.
-  """
-  struct PortfolioState
-    currPortfolio::Portfolio
-    start_date::Dates.Date
-    curr_date::Dates.Date
-  end
 
   """
     buy(portfolio, stock, numshares, date, transfee, data)
@@ -101,6 +91,5 @@ module PortfolioMod
 
 
 export Portfolio
-export PortfolioState
 
 end
