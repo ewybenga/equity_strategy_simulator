@@ -1,5 +1,3 @@
-
-
 module MarketDBMod
     using DelimitedFiles
     using DataFrames
@@ -7,13 +5,13 @@ module MarketDBMod
     using Dates
 
     """
-        replaceEmpty0(dataItem)
+        replaceEmpty(dataItem)
 
-    returns a 0 if the data item is an empty string, otherwise returns the original data item
+    returns val if the data item is an empty string, otherwise returns the original data item
     """
-    function replaceEmpty0(dataItem)
+    function replaceEmpty(dataItem, val)
         if dataItem==""
-            return 0.0
+            return val
         else
             return dataItem
         end
@@ -24,15 +22,16 @@ module MarketDBMod
 
     This function takes in a filepath (assumes CRSP data) and returns a DataFrame with the following columns and data types:
 
-     ______________________________________________________________________
-    |
-    | 
-    |______________________________________________________________________
+          ____________________________________________________________________
+    NAME | date   |    ticker   |    primexch    |   divamt    |    prc      |
+         |________|_____________|________________|_____________|_____________|
+    TYPE | Date   |    String   |     String     |  Float64    |   Float64   |
+         |________|_____________|________________|_____________|_____________|
 
     """
     function processData(filepath)
         # read data using DelimitedFiles
-        data = readdlm(filepath, ",")
+        data = readdlm(filepath, ',')
         # read this into a DataFrame
         df = DataFrame(data[2:size(data)[1], :])
         # change column names to symbols of first row
@@ -40,9 +39,16 @@ module MarketDBMod
         # change dates from Strings to formatted Dates
         df[:date] = Dates.Date.(string.(df[:date]), "yyyymmdd")
         # replace empty data items with 0 for dividend amount
-        df[:divamt] = replaceEmpty0.(df[:divamt])
-        # change type of primexch to String
-        df[:primexch]=string.(df[:primexch])
+        df[:divamt] = replaceEmpty.(df[:divamt], 0.)
+        # change type of primexch and ticker to String
+        df[:primexch] = string.(df[:primexch])
+        df[:ticker] = string.(df[:ticker])
+        # replace empty prices with missing
+        df[:prc] = replaceEmpty.(df[:prc], missing)
+        # delete unnecessary columns
+        extraCols = [n for n in names(df) if !any(x->x==n, [:date, :ticker, :divamt, :prc])]
+        delete!(df, extraCols)
+        return df
     end
 
 
