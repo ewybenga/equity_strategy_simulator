@@ -1,10 +1,32 @@
 module StockTickerMod
     using Dates
-    #using MarketDB
+    using Query
+    include("./MarketDB.jl")
+    using .MarketDBMod
 
-    #temporary until datasrc is figured out
-    function validTicker(data::String, exchange::String, symbol::String)
-        return true, Date(2000, 1, 1), Date(2018, 1, 1)
+
+    """
+    validTicker(data, exchange, symbol)
+
+    Purpose: The data source has a function that finds whether
+    a given exchange-symbol is in the database, and if so what
+    the start and end dates that the ticker appears in the DB
+
+    data: MarketDB datasource of the simulation
+    exchange: String of the exchange the ticker is traded on (ie "NYSE")
+    symbol: String of the ticker name (ie "GOOG")
+    """
+    function validTicker(data, exchange::String, symbol::String)
+        datesValid = @from i in data.data begin
+                        @where i.ticker==symbol && i.primexch==exchange
+                        @select i.date
+                        @collect 
+                    end
+        if length(datesValid) == 0
+            return false, missing, missing
+        else
+            return true, minimum(datesValid), maximum(datesValid)
+        end
     end
 
 
@@ -24,7 +46,7 @@ module StockTickerMod
         symbol::String
         start_date::Date
         end_date:: Date
-        function StockTicker(data, exchange, symbol)
+        function StockTicker(data, exchange::String, symbol::String)
             # Check whether the ticker exists in the data source
             tickerAvailable, start_date, end_date = validTicker(data, exchange, symbol)
             # If not return an error
@@ -35,6 +57,8 @@ module StockTickerMod
             end
         end
     end
+
+
 
     export StockTicker
 

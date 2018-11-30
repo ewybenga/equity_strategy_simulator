@@ -1,11 +1,122 @@
 module PortfolioMod
   using Dates
+  using Query
   include("./StockTicker.jl")
   using .StockTickerMod
   include("./MarketDB.jl")
   using .MarketDBMod
-  include("./MarketDBQuery.jl")
-  using .MarketDBQueryMod
+
+
+    """
+        query(data, date, ticker, column)
+
+    Purpose: Returns the value of a column of the ticker at the given date
+
+    data: MarketDB object of data for the simulation
+    date: Date you want the price of the ticker at
+    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    column: the column name to query
+    """
+    function query(data, date::Date, ticker::StockTicker, column::Symbol)
+        #error handling whether date is outside the ticker start and end range
+        if date<ticker.start_date || date>ticker.end_date
+          throw error("The requested date for this ticker isn't in the data source")
+        end
+        #query db
+        res = @from i in data.data begin
+                @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date == date
+                @select i[column]
+                @collect
+            end
+        #return value
+        return res[1]
+    end
+
+    """
+      query(data, date_start, date_end, ticker, column)
+
+    Purpose: Returns the value of a column of the ticker at the given date
+
+    data: MarketDB object of data for the simulation
+    date: Date you want the price of the ticker at
+    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    column: the column name to query
+    """
+    function query(data, date_start::Date, date_end::Date, ticker::StockTicker, column::Symbol)
+        #error handling whether date is outside the ticker start and end range
+        if date_start<ticker.start_date || date_end>ticker.end_date
+          throw error("The requested date range for this ticker isn't in the data source")
+        end
+        #query db
+        res = @from i in data.data begin
+                @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date >= date_start && i.date < date_end
+                @select i[column]
+                @collect
+            end
+        #return value
+        return res
+    end
+
+    """
+      query(data, date, ticker, columns)
+
+    Purpose: Returns the value of a column of the ticker at the given date
+
+    data: MarketDB object of data for the simulation
+    date: Date you want the price of the ticker at
+    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    columns: the list of column names to query. If empty list, query all.
+    """
+    function query(data, date::Date, ticker::StockTicker, columns::Array{Symbol,1})
+        # error handling whether date is outside the ticker start and end range
+        if date<ticker.start_date || date>ticker.end_date
+          throw error("The requested date for this ticker isn't in the data source")
+        end
+        # query db
+        res = @from i in data.data begin
+                @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date == date
+                @select i
+                @collect DataFrame
+            end
+        # narrow down columns if requested
+        if length(columns) > 0
+          res = res[1, columns]
+        end
+        # return value
+        return res
+    end
+
+
+    """
+      query(data, date_start, date_end, ticker, columns)
+
+    Purpose: Returns the value of a column of the ticker at the given date
+
+    data: MarketDB object of data for the simulation
+    date: Date you want the price of the ticker at
+    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    column: the list of column names to query. If empty list, query all.
+    """
+    function query(data, date_start::Date, date_end::Date, ticker::StockTicker, column::Symbol)
+        #error handling whether date is outside the ticker start and end range
+        if date_start<ticker.start_date || date_end>ticker.end_date
+          throw error("The requested date range for this ticker isn't in the data source")
+        end
+        #query db
+        res = @from i in data.data begin
+                @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date >= date_start && i.date < date_end
+                @select i
+                @collect DataFrame
+            end
+        # narrow down columns if requested
+        if length(columns) > 0
+          res = res[1, columns]
+        end
+        #return value
+        return res
+    end
+
+
 
   """
       Portfolio(holdings, capital)
