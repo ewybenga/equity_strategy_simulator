@@ -134,10 +134,11 @@ end
 
 Buys numshares shares of the given stock by querying the data for the price and trading that amount of capital for holdings in the portfolio
 """
-function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
+function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # get the value of the stock at the given date
+  price = :None
   try
-    price = query(data, date, stock, :prc)
+    price = query(data, date, stock, :prc)[1].value
   catch e
     # if the value cannot be found print the error statement and return the
     # portfolio unchanged
@@ -146,13 +147,13 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
     return 0, :None
   end
   # check that the portfolio has enough capital to buy this amount of shares
-  if portfolio.capital < (numshares * totalPrice - transfee)
+  if portfolio.capital < (numshares * price - transfee)
     # if it does not, buy as many shares as possible with current capital
     numshares = floor((portfolio.capital - transfee)/price)
   end
   if numshares>0
     # subtract capital spent
-    portfolio.capital -= (numshares * price + transfee)
+    portfolio.capital = portfolio.capital - (numshares * price + transfee)
     # add shares to portfolio
     if haskey(portfolio.holdings, stock)
       portfolio.holdings[stock] += numshares
@@ -169,7 +170,7 @@ end
 
 Sells numshares shares of the given stock by querying the data for the price and trading that amount of shares in the portfolio for the amount of capital it's worth
 """
-function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
+function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
      return 0, :None
@@ -179,8 +180,9 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
     numshares = portfolio.holdings[stock]
   end
   # get the value of the stock at the given date
+  price=:None
   try
-    price = query(data, date, stock, :prc)
+    price = query(data, date, stock, :prc)[1].value
   catch e
     # if the value cannot be found print the error statement and return the
     # portfolio unchanged
