@@ -16,7 +16,7 @@ export Portfolio, query, buy, sell
   ticker: A Ticker object containing the exchange and symbol of the ticker
   column: the column name to query
   """
-  function query(data, date::Date, ticker::Ticker, column::Symbol)
+  function query(data::MarketDB, date::Date, ticker::Ticker, column::Symbol)
       #error handling whether date is outside the ticker start and end range
       if date<ticker.start_date || date>ticker.end_date
         throw(BoundsError("The requested date for this ticker isn't in the data source"))
@@ -28,7 +28,7 @@ export Portfolio, query, buy, sell
               @collect
           end
       #return value
-      return res[1]
+      return res
   end
 
   """
@@ -41,7 +41,7 @@ export Portfolio, query, buy, sell
   ticker: A Ticker object containing the exchange and symbol of the ticker
   column: the column name to query
   """
-  function query(data, date_start::Date, date_end::Date, ticker::Ticker, column::Symbol)
+  function query(data::MarketDB, date_start::Date, date_end::Date, ticker::Ticker, column::Symbol)
       #error handling whether date is outside the ticker start and end range
       if date_start<ticker.start_date || date_end>ticker.end_date
         throw(BoundsError("The requested date for this ticker isn't in the data source"))
@@ -64,9 +64,9 @@ export Portfolio, query, buy, sell
   data: MarketDB object of data for the simulation
   date: Date you want the price of the ticker at
   ticker: A Ticker object containing the exchange and symbol of the ticker
-  columns: the list of column names to query. If empty list, query all.
+  columns: the list of column names to query. If list is [:All], query all.
   """
-  function query(data, date::Date, ticker::Ticker, columns::Array{Any,1})
+  function query(data::MarketDB, date::Date, ticker::Ticker, columns::Array{Symbol,1})
       # error handling whether date is outside the ticker start and end range
       if date<ticker.start_date || date>ticker.end_date
         throw(BoundsError("The requested date for this ticker isn't in the data source"))
@@ -78,7 +78,7 @@ export Portfolio, query, buy, sell
               @collect DataFrame
           end
       # narrow down columns if requested
-      if length(columns) > 0
+      if !(columns==[:All])
         res = res[1, columns]
       end
       # return value
@@ -94,9 +94,9 @@ export Portfolio, query, buy, sell
   data: MarketDB object of data for the simulation
   date: Date you want the price of the ticker at
   ticker: A Ticker object containing the exchange and symbol of the ticker
-  column: the list of column names to query. If empty list, query all.
+  columns: the list of column names to query. If list is [:All], query all.
   """
-  function query(data, date_start::Date, date_end::Date, ticker::Ticker, column::Array{Any,1})
+  function query(data, date_start::Date, date_end::Date, ticker::Ticker, columns::Array{Symbol,1})
       #error handling whether date is outside the ticker start and end range
       if date_start<ticker.start_date || date_end>ticker.end_date
         throw(BoundsError("The requested date for this ticker isn't in the data source"))
@@ -108,8 +108,8 @@ export Portfolio, query, buy, sell
               @collect DataFrame
           end
       # narrow down columns if requested
-      if length(columns) > 0
-        res = res[1, columns]
+      if !(columns==[:All])
+        res = res[columns]
       end
       #return value
       return res
