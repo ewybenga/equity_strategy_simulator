@@ -1,4 +1,4 @@
-module MarketData
+#module MarketData
     using DelimitedFiles
     using DataFrames
     using Query
@@ -68,5 +68,5 @@ module MarketData
 
     export MarketDB
 
-end
+#end
 
