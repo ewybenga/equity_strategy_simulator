@@ -1,4 +1,4 @@
-module MarketDBMod
+module MarketData
     using DelimitedFiles
     using DataFrames
     using Query

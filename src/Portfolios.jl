@@ -1,10 +1,10 @@
-module PortfolioMod
+module Portfolios
   using Dates
   using Query
-  include("./StockTicker.jl")
-  using .StockTickerMod
-  include("./MarketDB.jl")
-  using .MarketDBMod
+  include("./Tickers.jl")
+  using .Tickers
+  include("./MarketData.jl")
+  using .MarketData
 
 
     """
@@ -14,13 +14,13 @@ module PortfolioMod
 
     data: MarketDB object of data for the simulation
     date: Date you want the price of the ticker at
-    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    ticker: A Ticker object containing the exchange and symbol of the ticker
     column: the column name to query
     """
-    function query(data, date::Date, ticker::StockTicker, column::Symbol)
+    function query(data, date::Date, ticker::Ticker, column::Symbol)
         #error handling whether date is outside the ticker start and end range
         if date<ticker.start_date || date>ticker.end_date
-          throw error("The requested date for this ticker isn't in the data source")
+          throw(BoundsError("The requested date for this ticker isn't in the data source"))
         end
         #query db
         res = @from i in data.data begin
@@ -39,13 +39,13 @@ module PortfolioMod
 
     data: MarketDB object of data for the simulation
     date: Date you want the price of the ticker at
-    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    ticker: A Ticker object containing the exchange and symbol of the ticker
     column: the column name to query
     """
-    function query(data, date_start::Date, date_end::Date, ticker::StockTicker, column::Symbol)
+    function query(data, date_start::Date, date_end::Date, ticker::Ticker, column::Symbol)
         #error handling whether date is outside the ticker start and end range
         if date_start<ticker.start_date || date_end>ticker.end_date
-          throw error("The requested date range for this ticker isn't in the data source")
+          throw(BoundsError("The requested date for this ticker isn't in the data source"))
         end
         #query db
         res = @from i in data.data begin
@@ -64,13 +64,13 @@ module PortfolioMod
 
     data: MarketDB object of data for the simulation
     date: Date you want the price of the ticker at
-    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    ticker: A Ticker object containing the exchange and symbol of the ticker
     columns: the list of column names to query. If empty list, query all.
     """
-    function query(data, date::Date, ticker::StockTicker, columns::Array{Symbol,1})
+    function query(data, date::Date, ticker::Ticker, columns::Array{Symbol,1})
         # error handling whether date is outside the ticker start and end range
         if date<ticker.start_date || date>ticker.end_date
-          throw error("The requested date for this ticker isn't in the data source")
+          throw(BoundsError("The requested date for this ticker isn't in the data source"))
         end
         # query db
         res = @from i in data.data begin
@@ -94,13 +94,13 @@ module PortfolioMod
 
     data: MarketDB object of data for the simulation
     date: Date you want the price of the ticker at
-    ticker: A StockTicker object containing the exchange and symbol of the ticker
+    ticker: A Ticker object containing the exchange and symbol of the ticker
     column: the list of column names to query. If empty list, query all.
     """
-    function query(data, date_start::Date, date_end::Date, ticker::StockTicker, column::Symbol)
+    function query(data, date_start::Date, date_end::Date, ticker::Ticker, column::Symbol)
         #error handling whether date is outside the ticker start and end range
         if date_start<ticker.start_date || date_end>ticker.end_date
-          throw error("The requested date range for this ticker isn't in the data source")
+          throw(BoundsError("The requested date for this ticker isn't in the data source"))
         end
         #query db
         res = @from i in data.data begin
@@ -125,7 +125,7 @@ module PortfolioMod
 
   """
   mutable struct Portfolio
-      holdings::Dict{StockTicker, Float64}
+      holdings::Dict{Ticker, Float64}
       capital::Float64
   end
 
@@ -135,7 +135,7 @@ module PortfolioMod
 
   Buys numshares shares of the given stock by querying the data for the price and trading that amount of capital for holdings in the portfolio
   """
-  function buy(portfolio::Portfolio, stock::StockTicker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
+  function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
     # get the value of the stock at the given date
     try
       price = query(data, date, stock, :prc)
@@ -170,7 +170,7 @@ module PortfolioMod
 
   Sells numshares shares of the given stock by querying the data for the price and trading that amount of shares in the portfolio for the amount of capital it's worth
   """
-  function sell(portfolio::Portfolio, stock::StockTicker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
+  function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float32, data::MarketDB)
     # check that the portfolio has shares of this stock
     if haskey(portfolio.holdings, stock) == false
        return 0, :None

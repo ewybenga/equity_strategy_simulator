@@ -1,8 +1,8 @@
-module StockTickerMod
+module Tickers
     using Dates
     using Query
-    include("./MarketDB.jl")
-    using .MarketDBMod
+    include("./MarketData.jl")
+    using .MarketData
 
 
     """
@@ -31,22 +31,22 @@ module StockTickerMod
 
 
     """
-        StockTicker(name)
+        Ticker(name)
 
-    The StockTicker object contains the exchange and symbol. It checks
+    The Ticker object contains the exchange and symbol. It checks
     that the data for that equity is available in the current
     datasource. This is checked using datasrc.validTicker(), and
-    a datasrc must be defined in the scope of the StockTicker.
+    a datasrc must be defined in the scope of the Ticker.
 
     exchange: String of the exchange the ticker is traded on (ie "NYSE")
     symbol: String of the ticker name (ie "GOOG")
     """
-    struct StockTicker
+    struct Ticker
         exchange::String
         symbol::String
         start_date::Date
         end_date:: Date
-        function StockTicker(data, exchange::String, symbol::String)
+        function Ticker(data, exchange::String, symbol::String)
             # Check whether the ticker exists in the data source
             tickerAvailable, start_date, end_date = validTicker(data, exchange, symbol)
             # If not return an error
@@ -60,6 +60,6 @@ module StockTickerMod
 
 
 
-    export StockTicker
+    export Ticker
 
 end
