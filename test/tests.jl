@@ -3,8 +3,10 @@ using Dates
 include("../src/Tickers.jl")
 include("../src/MarketDB.jl")
 include("../src/Portfolios.jl")
-m = MarketDB("../data/data.csv")
+
+
 ## MARKET DB TESTS
+m = MarketDB("../data/data.csv")
 #test size of sample db
 @test size(m.data)==(38494, 5)
 #test correct columns in sample db
