@@ -22,7 +22,7 @@ function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
       recentPrices = queryMarketDB(data, date-Day(15), date, stock, :prc)
       currPrice = pop!(recentPrices)
     end
-    val += currPrice[1].value * p.holdings[stock]
+    val += currPrice[1].value * portfolio.holdings[stock]
   end
   return val
 end

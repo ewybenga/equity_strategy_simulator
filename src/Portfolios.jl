@@ -30,12 +30,12 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
-    print("Could not find data for the ticker ", stock, " on the date ", date)
+    println("Could not find data for the ticker ", stock, " on the date ", date)
     return 0, :None
   end
   # check that the portfolio has enough capital to buy this amount of shares
   price = price[1].value
-  if portfolio.capital < (numshares * price - transfee)
+  if portfolio.capital < (numshares * price + transfee)
     # if it does not, buy as many shares as possible with current capital
     numshares = floor((portfolio.capital - transfee)/price)
   end
@@ -72,7 +72,7 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
-    print("Could not find data for the ticker ", stock, " on the date ", date)
+    println("Could not find data for the ticker ", stock, " on the date ", date)
     return 0, :None
   end
   price = price[1].value
