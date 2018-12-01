@@ -16,9 +16,13 @@ end
 
 mutable struct PortfolioDB
     data::DataFrame
-    function PortfolioDB()
+    function PortfolioDB(m::MarketDB)
         # initialize a new DataFrame to hold temporal portfolio data
-        data = DataFrame(date=Date[], value=Float64[], capital=Float64[], holdings=Dict[], volatility=Float64[], riskreward=Float64[], returns=Float64[])
+        stocks = unique!(m.data[:ticker])
+        data = DataFrame(date=Date[], value=Float64[], capital=Float64[], volatility=Float64[], riskreward=Float64[], returns=Float64[])
+        for i in stocks
+            data.i = Float64[]
+        end
 
         return new(data)
     end
