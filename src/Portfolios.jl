@@ -27,6 +27,10 @@ export Portfolio, query, buy, sell
               @select i[column]
               @collect
           end
+      # check if empty results set
+      if size(res)[1] == 0
+        return missing
+      end
       #return value
       return res
   end
@@ -52,6 +56,10 @@ export Portfolio, query, buy, sell
               @select i[column]
               @collect
           end
+      # check if empty results set
+      if size(res)[1] == 0
+        return missing
+      end
       #return value
       return res
   end
@@ -77,6 +85,10 @@ export Portfolio, query, buy, sell
               @select i
               @collect DataFrame
           end
+      # check if empty results set
+      if size(res)[1] == 0
+        return missing
+      end
       # narrow down columns if requested
       if !(columns==[:All])
         res = res[1, columns]
@@ -107,6 +119,10 @@ export Portfolio, query, buy, sell
               @select i
               @collect DataFrame
           end
+      # check if empty results set
+      if size(res)[1] == 0
+        return missing
+      end
       # narrow down columns if requested
       if !(columns==[:All])
         res = res[columns]
@@ -136,17 +152,15 @@ Buys numshares shares of the given stock by querying the data for the price and 
 """
 function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # get the value of the stock at the given date
-  price = :None
-  try
-    price = query(data, date, stock, :prc)[1].value
-  catch e
-    # if the value cannot be found print the error statement and return the
-    # portfolio unchanged
+
+  price = query(data, date, stock, :prc)
+  # if the value cannot be found print the error statement and return the portfolio unchanged
+  if ismissing(price)
     print("Could not find data for the ticker ", stock, " on the date ", date)
-    print(e)
     return 0, :None
   end
   # check that the portfolio has enough capital to buy this amount of shares
+  price = price[1].value
   if portfolio.capital < (numshares * price - transfee)
     # if it does not, buy as many shares as possible with current capital
     numshares = floor((portfolio.capital - transfee)/price)
@@ -173,6 +187,7 @@ Sells numshares shares of the given stock by querying the data for the price and
 function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
+    print("Shorting is not allowed, cannot sell ", stock," on date ", date)
      return 0, :None
   end
   # check that the portfolio has as many shares as are requested to be sold
@@ -180,16 +195,13 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
     numshares = portfolio.holdings[stock]
   end
   # get the value of the stock at the given date
-  price=:None
-  try
-    price = query(data, date, stock, :prc)[1].value
-  catch e
-    # if the value cannot be found print the error statement and return the
-    # portfolio unchanged
+  price = query(data, date, stock, :prc)
+  # if the value cannot be found print the error statement and return the portfolio unchanged
+  if ismissing(price)
     print("Could not find data for the ticker ", stock, " on the date ", date)
-    print(e)
     return 0, :None
   end
+  price = price[1].value
   # subtract shares from portfolio
   if numshares == portfolio.holdings[stock]
     delete!(portfolio.holdings, stock)
@@ -201,4 +213,24 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
   return numshares, price
 end
 
+"""
+  evaluateValue(portfolio, date, data)
 
+Evaluates the value of a portfolio on a given date using the MarketDB object as the datasource.
+"""
+function evaluteValue(portfolio::Portfolio, date::Date, data::MarketDB)
+  # initialize value as the capital in the portfolio
+  val = portfolio.capital
+  # iterate through portfolio and add value of each stock on that day
+  for stock in keys(portfolio.holdings)
+    currPrice = query(data, date, stock, :prc)
+    # if not traded on that day find most recent traded at price
+    if ismissing(currPrice)
+      # find most recent trade date - assumes it has traded within the last 15 days
+      recentPrices = query(data, date-Day(15), date, stock, :prc)
+      currPrice = pop!(recentPrices)
+    end
+    val += currPrice[1].value * p.holdings[stock]
+  end
+  return val
+end

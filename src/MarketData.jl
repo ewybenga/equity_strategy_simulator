@@ -14,7 +14,7 @@ function replaceEmpty(dataItem, val)
     if dataItem==""
         return val
     else
-        return dataItem
+        return convert(Float64, dataItem)
     end
 end
 
@@ -39,13 +39,12 @@ function processData(filepath)
     names!(df, [Symbol(lowercase(i)) for i in data[1, :]])
     # change dates from Strings to formatted Dates
     df[:date] = Dates.Date.(string.(df[:date]), "yyyymmdd")
-    # replace empty data items with 0 for dividend amount
+    # replace empty data items with 0 for dividend amount, missing for price
     df[:divamt] = replaceEmpty.(df[:divamt], 0.)
+    df[:prc] = replaceEmpty.(df[:prc], missing)
     # change type of primexch and ticker to String
     df[:primexch] = string.(df[:primexch])
     df[:ticker] = string.(df[:ticker])
-    # replace empty prices with missing
-    df[:prc] = replaceEmpty.(df[:prc], missing)
     # delete unnecessary columns
     extraCols = [n for n in names(df) if !any(x->x==n, [:date, :ticker, :divamt, :primexch, :prc])]
     delete!(df, extraCols)
@@ -65,4 +64,3 @@ struct MarketDB
         return new(processData(filepath))
     end
 end
-
