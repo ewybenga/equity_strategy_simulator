@@ -20,7 +20,7 @@ function validTicker(data::MarketDB, exchange::String, symbol::String)
     datesValid = @from i in data.data begin
                     @where i.ticker==symbol && i.primexch==exchange
                     @select i.date
-                    @collect 
+                    @collect
                 end
     if length(datesValid) == 0
         return false, missing, missing
@@ -57,4 +57,3 @@ struct Ticker
         end
     end
 end
-
