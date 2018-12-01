@@ -1,6 +1,6 @@
 using Dates
 include("./Tickers.jl")
-include("./MarketData.jl")
+include("./MarketDB.jl")
 
 export queryMarketDB
 

@@ -1,7 +1,7 @@
 using Test
 using Dates
 include("../src/Tickers.jl")
-include("../src/MarketData.jl")
+include("../src/MarketDB.jl")
 include("../src/Portfolios.jl")
 m = MarketDB("../data/data.csv")
 ## MARKET DB TESTS

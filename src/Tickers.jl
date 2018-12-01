@@ -1,6 +1,6 @@
 using Dates
 using Query
-include("./MarketData.jl")
+include("./MarketDB.jl")
 
 
 export Ticker
