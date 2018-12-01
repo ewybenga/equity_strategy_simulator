@@ -1,136 +1,10 @@
 using Dates
 using Query
 include("./Tickers.jl")
-include("./MarketData.jl")
+include("./queryfunctions.jl")
 
 
-export Portfolio, query, buy, sell
-
-  """
-      query(data, date, ticker, column)
-
-  Purpose: Returns the value of a column of the ticker at the given date
-
-  data: MarketDB object of data for the simulation
-  date: Date you want the price of the ticker at
-  ticker: A Ticker object containing the exchange and symbol of the ticker
-  column: the column name to query
-  """
-  function query(data::MarketDB, date::Date, ticker::Ticker, column::Symbol)
-      #error handling whether date is outside the ticker start and end range
-      if date<ticker.start_date || date>ticker.end_date
-        throw(BoundsError("The requested date for this ticker isn't in the data source"))
-      end
-      #query db
-      res = @from i in data.data begin
-              @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date == date
-              @select i[column]
-              @collect
-          end
-      # check if empty results set
-      if size(res)[1] == 0
-        return missing
-      end
-      #return value
-      return res
-  end
-
-  """
-    query(data, date_start, date_end, ticker, column)
-
-  Purpose: Returns the value of a column of the ticker at the given date
-
-  data: MarketDB object of data for the simulation
-  date: Date you want the price of the ticker at
-  ticker: A Ticker object containing the exchange and symbol of the ticker
-  column: the column name to query
-  """
-  function query(data::MarketDB, date_start::Date, date_end::Date, ticker::Ticker, column::Symbol)
-      #error handling whether date is outside the ticker start and end range
-      if date_start<ticker.start_date || date_end>ticker.end_date
-        throw(BoundsError("The requested date for this ticker isn't in the data source"))
-      end
-      #query db
-      res = @from i in data.data begin
-              @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date >= date_start && i.date < date_end
-              @select i[column]
-              @collect
-          end
-      # check if empty results set
-      if size(res)[1] == 0
-        return missing
-      end
-      #return value
-      return res
-  end
-
-  """
-    query(data, date, ticker, columns)
-
-  Purpose: Returns the value of a column of the ticker at the given date
-
-  data: MarketDB object of data for the simulation
-  date: Date you want the price of the ticker at
-  ticker: A Ticker object containing the exchange and symbol of the ticker
-  columns: the list of column names to query. If list is [:All], query all.
-  """
-  function query(data::MarketDB, date::Date, ticker::Ticker, columns::Array{Symbol,1})
-      # error handling whether date is outside the ticker start and end range
-      if date<ticker.start_date || date>ticker.end_date
-        throw(BoundsError("The requested date for this ticker isn't in the data source"))
-      end
-      # query db
-      res = @from i in data.data begin
-              @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date == date
-              @select i
-              @collect DataFrame
-          end
-      # check if empty results set
-      if size(res)[1] == 0
-        return missing
-      end
-      # narrow down columns if requested
-      if !(columns==[:All])
-        res = res[1, columns]
-      end
-      # return value
-      return res
-  end
-
-
-  """
-    query(data, date_start, date_end, ticker, columns)
-
-  Purpose: Returns the value of a column of the ticker at the given date
-
-  data: MarketDB object of data for the simulation
-  date: Date you want the price of the ticker at
-  ticker: A Ticker object containing the exchange and symbol of the ticker
-  columns: the list of column names to query. If list is [:All], query all.
-  """
-  function query(data, date_start::Date, date_end::Date, ticker::Ticker, columns::Array{Symbol,1})
-      #error handling whether date is outside the ticker start and end range
-      if date_start<ticker.start_date || date_end>ticker.end_date
-        throw(BoundsError("The requested date for this ticker isn't in the data source"))
-      end
-      #query db
-      res = @from i in data.data begin
-              @where i.ticker == ticker.symbol && i.primexch == ticker.exchange && i.date >= date_start && i.date < date_end
-              @select i
-              @collect DataFrame
-          end
-      # check if empty results set
-      if size(res)[1] == 0
-        return missing
-      end
-      # narrow down columns if requested
-      if !(columns==[:All])
-        res = res[columns]
-      end
-      #return value
-      return res
-  end
-
+export Portfolio, buy, sell, evaluateValue
 
 
 """
@@ -153,7 +27,7 @@ Buys numshares shares of the given stock by querying the data for the price and 
 function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # get the value of the stock at the given date
 
-  price = query(data, date, stock, :prc)
+  price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
     print("Could not find data for the ticker ", stock, " on the date ", date)
@@ -167,7 +41,7 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
   end
   if numshares>0
     # subtract capital spent
-    portfolio.capital = portfolio.capital - (numshares * price + transfee)
+    portfolio.capital = round(portfolio.capital - (numshares * price + transfee), digits=2)
     # add shares to portfolio
     if haskey(portfolio.holdings, stock)
       portfolio.holdings[stock] += numshares
@@ -195,7 +69,7 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
     numshares = portfolio.holdings[stock]
   end
   # get the value of the stock at the given date
-  price = query(data, date, stock, :prc)
+  price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
     print("Could not find data for the ticker ", stock, " on the date ", date)
@@ -209,7 +83,7 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
     portfolio.holdings[stock] -= numshares
   end
   # add capital from selling the shares, minus the transaction fee
-  portfolio.capital += (numshares * price - transfee)
+  portfolio.capital += round((numshares * price - transfee), digits=2)
   return numshares, price
 end
 
@@ -218,16 +92,16 @@ end
 
 Evaluates the value of a portfolio on a given date using the MarketDB object as the datasource.
 """
-function evaluteValue(portfolio::Portfolio, date::Date, data::MarketDB)
+function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
   # initialize value as the capital in the portfolio
   val = portfolio.capital
   # iterate through portfolio and add value of each stock on that day
   for stock in keys(portfolio.holdings)
-    currPrice = query(data, date, stock, :prc)
+    currPrice = queryMarketDB(data, date, stock, :prc)
     # if not traded on that day find most recent traded at price
     if ismissing(currPrice)
       # find most recent trade date - assumes it has traded within the last 15 days
-      recentPrices = query(data, date-Day(15), date, stock, :prc)
+      recentPrices = queryMarketDB(data, date-Day(15), date, stock, :prc)
       currPrice = pop!(recentPrices)
     end
     val += currPrice[1].value * p.holdings[stock]
