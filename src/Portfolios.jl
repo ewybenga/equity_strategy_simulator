@@ -92,7 +92,7 @@ end
 
 Evaluates the value of a portfolio on a given date using the MarketDB object as the datasource.
 """
-function evaluteValue(portfolio::Portfolio, date::Date, data::MarketDB)
+function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
   # initialize value as the capital in the portfolio
   val = portfolio.capital
   # iterate through portfolio and add value of each stock on that day
