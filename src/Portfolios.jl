@@ -19,6 +19,27 @@ mutable struct Portfolio
 end
 
 """
+overwrite show for dict of ticker=>float64
+"""
+function Base.show(io::IO, holdings::Dict{Ticker, Float64})
+  linelen=30
+  dashline = "|"*'-'^(linelen-2)*"|\n"
+  s = '-'^linelen*'\n'
+  l = "|holdings:"
+  l = l*' '^(linelen-1-length(l))*"|\n"
+  s=s*l
+  for h in holdings
+      l = "|   "
+      t = h[1]
+      l = l*string(t.symbol)*"("*t.exchange*"): "*string(h[2])*" shares"
+      l = l*' '^(linelen-length(l)-1)*"|\n"
+      s = s*l
+  end
+  s = s*dashline
+    print(io, s)
+end
+
+"""
 overwriting show for Portfolio to show pretty version
 """
 function Base.show(io::IO, p::Portfolio)
