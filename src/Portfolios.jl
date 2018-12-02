@@ -18,6 +18,31 @@ mutable struct Portfolio
     capital::Float64
 end
 
+"""
+overwriting show for Portfolio to show pretty version
+"""
+function Base.show(io::IO, p::Portfolio)
+  linelen = 30
+  s = '-'^linelen*'\n'
+  c = "|capital: "*string(round(p.capital, digits=2))
+  c = c*' '^(linelen-1-length(c))*"|\n"
+  s = s*c
+  dashline = "|"*'-'^(linelen-2)*"|\n"
+  s=s*dashline
+  l = "|holdings:"
+  l = l*' '^(linelen-1-length(l))*"|\n"
+  s=s*l
+  for h in p.holdings
+      l = "|   "
+      t = h[1]
+      l = l*string(t.symbol)*"("*t.exchange*"): "*string(h[2])*" shares"
+      l = l*' '^(linelen-length(l)-1)*"|\n"
+      s = s*l
+  end
+  s = s*dashline
+  print(io, s)
+end
+
 
 """
   buy(portfolio, stock, numshares, date, transfee, data, applyTransfee=true)

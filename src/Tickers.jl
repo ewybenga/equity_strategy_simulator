@@ -63,7 +63,6 @@ overwriting show for Tickers to show pretty version
 """
 function Base.show(io::IO, t::Ticker)
     linelen = 20
-    t = tickerTest
     s = '-'^linelen
     n = t.symbol*" ("*t.exchange*")"
     nspaces = linelen-2-length(n)
