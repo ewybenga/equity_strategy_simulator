@@ -102,6 +102,25 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
   return numshares, price
 end
 
+
+"""
+  buy(portfolio, stocks, numshares, date, transfee, data, applyTransfee=true)
+
+Buys multiple stocks by querying the data for the prices and trading the amount of capital in the portfolio for the stock. This is done in the order of the stocks dictionary - the first item in the dictionary will be traded first (this is important if the portfolio is low on funds)
+"""
+function buy(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
+  #dictionary to store results of order attempts
+  res = Dict{Ticker, Tuple}()
+  #for each stock in the stocks dictionary, sell the num specified
+  for stock in keys(stocks)
+    numshares = stocks[stock]
+    curres = buy(portfolio, stock, numshares, date, transfee, data, false)
+    res[stock] = curres
+  end
+  # now subtract transaction fee
+  portfolio.capital -= transfee
+  return res
+
 """
   sell(portfolio, stock, numshares, date, transfee, data, applyTransfee=true)
 
@@ -141,31 +160,23 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
 end
 
 """
-  placeOrder(type, transfee, date, data, portfolio, orders)
+  sell(portfolio, stocks, numshares, date, transfee, data, applyTransfee=true)
 
-Places an order of type buy or sell with a transaction fee on a given date to the portfolio. The orders will consist of a dictionary of ticker:numshares
+Sells multiple stocks by querying the data for the prices and trading that amount of shares in the portfolio for the amount of capital it's worth. This is done in the orderof the stocks dictionary - the first item in the dictionary will be traded first
 """
-function placeOrder(type::Symbol, transfee::Float64, date::Date, data::MarketDB, portfolio::Portfolio, orders::Dict{Ticker, Float64})
+function sell(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   #dictionary to store results of order attempts
   res = Dict{Ticker, Tuple}()
-  #for each stock in the order
-  for stock in keys(orders)
-    numshares = orders[stock]
-    # buy or sell
-    if type==:buy
-      curres = buy(portfolio, stock, numshares, date, transfee, data, false)
-    elseif type==:sell
-      curres = sell(portfolio, stock, numshares, date, transfee, data, false)
-    else
-      println("Neither buy nor sell was selected")
-      return res
-    end
+  #for each stock in the stocks dictionary, sell the num specified
+  for stock in keys(stocks)
+    numshares = stocks[stock]
+    curres = sell(portfolio, stock, numshares, date, transfee, data, false)
     res[stock] = curres
   end
   # now subtract transaction fee
   portfolio.capital -= transfee
   return res
-end
+
 
 """
   addDividend(date, data, portfolio)
