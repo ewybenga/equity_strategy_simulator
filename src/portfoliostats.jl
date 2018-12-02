@@ -24,7 +24,7 @@ function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
     end
     val += currPrice[1].value * portfolio.holdings[stock]
   end
-  return val
+  return round(val, digits=2)
 end
 
 """

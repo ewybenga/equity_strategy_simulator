@@ -123,4 +123,16 @@ writePortfolio(pdb, d+Day(1), portfolioTest, .13, .56, evaluateValue(portfolioTe
 @test ismissing(getPortfolioState(pdb, d-Day(1)))
 @test getPortfolioState(pdb, d)[:capital][1]==4098.5
 
+#PORTFOLIOSTATS TESTS
+println("Beginning portfoliostats Tests...")
+pstatsTest = Portfolio(Dict(tickerTest=>4, tickerTest2=>4), 1000)
+# check that value is evaluated correctly
+a=queryMarketDB(m,Date(Date(2008, 6, 30)), tickerTest, :prc)[1].value
+b=queryMarketDB(m,Date(Date(2008, 6, 30)), tickerTest2, :prc)[1].value
+@test evaluateValue(pstatsTest, Date(2008, 6, 30), m) == round(4*a + 4*b + 1000, digits=2)
+# check that cumulative return is calculated correctly
+pdbTest = PortfolioDB(m)
+writePortfolio(pdbTest, Date(2008, 6,30), pstatsTest, 0., 0., evaluateValue(pstatsTest, Date(2008, 6,30), m), 0., 0.)
+writePortfolio(pdbTest, Date(2008, 7,1), pstatsTest, 0., 0., evaluateValue(pstatsTest, Date(2008, 7,1), m), 0., 0.)
+@test computeCumulativeReturn(pstatsTest,Date(2008, 7,1),pdbTest,m) == 0.009540631647034115
 println("TESTING COMPLETE")
