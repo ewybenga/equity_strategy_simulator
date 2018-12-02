@@ -20,13 +20,12 @@ end
 
 
 """
-  buy(portfolio, stock, numshares, date, transfee, data)
+  buy(portfolio, stock, numshares, date, transfee, data, applyTransfee=true)
 
 Buys numshares shares of the given stock by querying the data for the price and trading that amount of capital for holdings in the portfolio
 """
-function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
+function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Boolean=true)
   # get the value of the stock at the given date
-
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
@@ -41,7 +40,11 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
   end
   if numshares>0
     # subtract capital spent
-    portfolio.capital = round(portfolio.capital - (numshares * price + transfee), digits=2)
+    if applyTransfee
+      portfolio.capital = round(portfolio.capital - (numshares * price + transfee), digits=2)
+    else
+      portfolio.capital = round(portfolio.capital - (numshares * price), digits=2)
+    end
     # add shares to portfolio
     if haskey(portfolio.holdings, stock)
       portfolio.holdings[stock] += numshares
@@ -54,11 +57,11 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
 end
 
 """
-  sell(portfolio, stock, numshares, date, transfee, data)
+  sell(portfolio, stock, numshares, date, transfee, data, applyTransfee=true)
 
 Sells numshares shares of the given stock by querying the data for the price and trading that amount of shares in the portfolio for the amount of capital it's worth
 """
-function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
+function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Boolean=true)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
     println("Shorting is not allowed, cannot sell ", stock," on date ", date)
@@ -82,7 +85,24 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
   else
     portfolio.holdings[stock] -= numshares
   end
-  # add capital from selling the shares, minus the transaction fee
-  portfolio.capital += round((numshares * price - transfee), digits=2)
+  # add capital from selling the shares, minus the transaction fee if it should be applied now
+  if applyTransfee
+    portfolio.capital += round((numshares * price - transfee), digits=2)
+  else
+    portfolio.capital += round((numshares * price), digits=2)
+  end
   return numshares, price
+end
+
+"""
+  placeOrder(type, transfee, date, data, portfolio, orders)
+
+Places an order of type buy or sell with a transaction fee on a given date to the portfolio. The orders will consist of a dictionary of ticker:numshares
+"""
+function placeOrder(type::Symbol, transfee::Float64, date::Date, data::MarketDB, portfolio::Portfolio, orders::Dict)
+  for stock in keys(orders)
+
+
+
+  end
 end
