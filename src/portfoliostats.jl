@@ -32,11 +32,11 @@ end
 
 Compute the cumulative return of the portfolio since the start date. Formula is (p_current/p_initial)-1
 """
-function computeCumulativeReturn(portfolio::Portfolio, date::Date, data::PortfolioDB)
+function computeCumulativeReturn(portfolio::Portfolio, date::Date, pdb::PortfolioDB, mdb::MarketDB)
   # find initial value
-  p_initial = 10
+  p_initial = pdb.data[1,:value]
   # find current value
-  p_current = 20
+  p_current = evaluateValue(portfolio, date, mdb)
   #compute cumulative return
   return (p_current/p_initial) - 1.
 end
