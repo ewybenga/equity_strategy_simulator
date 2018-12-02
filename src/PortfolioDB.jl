@@ -65,3 +65,19 @@ function writePortfolio(pdb::PortfolioDB, date::Date, portfolio::Portfolio, vola
     # write do database
     append!(pdb.data,writablerow)
 end
+
+"""
+    getPortfolioState(pdb, date)
+
+gets the row in the portfolioDB containing the state of the portfolio and associated statistics on a given date
+"""
+function getPortfolioState(pdb::PortfolioDB, date::Date)
+    res = @from i in pdb.data begin
+            @where i["date"] == date
+            @select i
+            @collect DataFrame
+        end
+    if size(res)[2]==0
+        return missing
+    end
+    return res
