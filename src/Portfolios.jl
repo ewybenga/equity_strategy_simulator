@@ -24,7 +24,7 @@ end
 
 Buys numshares shares of the given stock by querying the data for the price and trading that amount of capital for holdings in the portfolio
 """
-function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Boolean=true)
+function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   # get the value of the stock at the given date
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
@@ -61,7 +61,7 @@ end
 
 Sells numshares shares of the given stock by querying the data for the price and trading that amount of shares in the portfolio for the amount of capital it's worth
 """
-function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Boolean=true)
+function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
     println("Shorting is not allowed, cannot sell ", stock," on date ", date)
@@ -99,10 +99,19 @@ end
 
 Places an order of type buy or sell with a transaction fee on a given date to the portfolio. The orders will consist of a dictionary of ticker:numshares
 """
-function placeOrder(type::Symbol, transfee::Float64, date::Date, data::MarketDB, portfolio::Portfolio, orders::Dict)
-  for stock in keys(orders)
 
+"""
+  addDividend(date, data, portfolio)
 
-
-  end
+Calculates the accumulated dividends accross all holdings in a profile and adds that amount to the profile's capital
+"""
+function addDividend(date::Date, data::MarketDB, portfolio::Portfolio)
+    for holding in portfolio.holdings
+        i = queryMarketDB(data, date, holding[1], :divamt)
+        if i == 0.
+            continue
+        else
+            portfolio.capital += i[1]*holding[2]
+        end
+    end
 end
