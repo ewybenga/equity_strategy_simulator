@@ -61,7 +61,7 @@ Sells numshares shares of the given stock by querying the data for the price and
 function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
-    print("Shorting is not allowed, cannot sell ", stock," on date ", date)
+    println("Shorting is not allowed, cannot sell ", stock," on date ", date)
      return 0, :None
   end
   # check that the portfolio has as many shares as are requested to be sold

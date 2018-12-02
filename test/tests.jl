@@ -3,9 +3,12 @@ using Dates
 include("../src/Tickers.jl")
 include("../src/MarketDB.jl")
 include("../src/Portfolios.jl")
+include("../src/PortfolioDB.jl")
+include("../src/portfoliostats.jl")
 
 
 ## MARKET DB TESTS
+println("Beginning MarketDB Tests...")
 m = MarketDB("../data/data.csv")
 #test size of sample db
 @test size(m.data)==(38494, 5)
@@ -24,6 +27,7 @@ m = MarketDB("../data/data.csv")
 
 
 ## STOCK TICKER TESTS
+println("Beginning Tickers Tests...")
 @test_throws ErrorException Ticker(m, "Q", "ABC")
 tickerTest = Ticker(m, "Q", "MSFT")
 @test tickerTest.exchange=="Q"
@@ -33,6 +37,7 @@ tickerTest = Ticker(m, "Q", "MSFT")
 
 
 ## PORTFOLIO TESTS
+println("Beginning Portfolio Tests...")
 tickerTest2 = Ticker(m, "Q", "GOOG")
 # test creation of portfolio
 portfolioTest = Portfolio(Dict(tickerTest=>1, tickerTest2=>4), 1000)
@@ -81,8 +86,8 @@ expensiveGoogle = Ticker(m, "Q", "GOOGL")
 @test portfolioTest.capital ≈ round(1000-200.77*4-57.67-30+780.08*4+202.83*4+57.61, digits=2)
 @test portfolioTest.holdings == Dict(tickerTest=>1)
 
-
 #PORTFOLIODB TESTS
+println("Beginning PortfolioDB Tests...")
 pdb = PortfolioDB(m)
 cols = string.(names(pdb.data))
 uniqueTickers = unique(m.data.ticker)
@@ -111,3 +116,5 @@ writePortfolio(pdb, d+Day(1), portfolioTest, .13, .56, evaluateValue(portfolioTe
 # test query on a certain day
 @test ismissing(getPortfolioState(pdb, d-Day(1)))
 @test getPortfolioState(pdb, d)[:capital][1]==4098.5
+
+println("TESTING COMPLETE")

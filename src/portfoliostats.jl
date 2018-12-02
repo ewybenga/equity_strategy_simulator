@@ -30,7 +30,7 @@ end
 """
   computeCumulativeReturn(portfolio, date, data)
 
-Compute the cumulative return of the portfolio since the start date
+Compute the cumulative return of the portfolio since the start date. Formula is (p_current/p_initial)-1
 """
 function computeCumulativeReturn(portfolio::Portfolio, date::Date, data::PortfolioDB)
   # find initial value
