@@ -85,6 +85,12 @@ expensiveGoogle = Ticker(m, "Q", "GOOGL")
 @test sell(portfolioTest, tickerTest2, 1., Date(2016, 9, 6), 5., m) == (0., :None)
 @test portfolioTest.capital ≈ round(1000-200.77*4-57.67-30+780.08*4+202.83*4+57.61, digits=2)
 @test portfolioTest.holdings == Dict(tickerTest=>1)
+# check that dividends will be addded for days with dividend returns and not for days without dividend returns
+divTest = Portfolio(Dict(tickerTest=>4, tickerTest2=>4), 1000)
+addDividend(Date(2008,8,19),m,divTest)
+@test divTest.capital == 1000.44
+addDividend(Date(2008,6,30),m,divTest)
+@test divTest.capital == 1000.44
 
 #PORTFOLIODB TESTS
 println("Beginning PortfolioDB Tests...")
