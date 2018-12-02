@@ -46,11 +46,11 @@ end
 
 Compute the annualized return of the portfolio since the start date using formula Ra = ( (1 + Rc) ^ (1/n) ) – 1
 """
-function computeAnnualizedReturn(portfolio::Portfolio, date::Date, data::PortfolioDB)
+function computeAnnualizedReturn(portfolio::Portfolio, date::Date, data::PortfolioDB, mdb::MarketDB)
   # get number of years the portfolio has existed
-  numYears = 10
+  numYears = (date-data.data[:date][1]).value/365.
   # compute annualized return
-  return ((1+computeCumulativeReturn(portfolio, date, data)^(1/numYears))-1)
+  return (1+computeCumulativeReturn(portfolio, date, data, mdb))^(1/numYears)-1
 end
 
 """
