@@ -47,6 +47,9 @@ function writePortfolio(pdb::PortfolioDB, date::Date, portfolio::Portfolio, vola
     newrow["riskreward"]=riskreward
     newrow["return_annual"]=return_annual
     newrow["return_cumulative"]=return_cumulative
+    nr = DataFrame(newrow)
+    nr = nr[[:date, :value, :capital, :volatility, :riskreward, :return_annual, :return_cumulative]]
+    # get stock statistics for all stocks
     stocks = Dict()
     for i in setdiff(string.(names(pdb.data)), keys(newrow))
         if i in keys(stockCounts)
@@ -59,10 +62,9 @@ function writePortfolio(pdb::PortfolioDB, date::Date, portfolio::Portfolio, vola
     stocks = sort(stocks)
     st = DataFrame(stocks)
     st.date=date
-    nr = DataFrame(newrow)
-    nr = nr[[:date, :value, :capital, :volatility, :riskreward, :return_annual, :return_cumulative]]
+
     writablerow = join(nr,st,on=:date)
-    # write do database
+    # write to database
     append!(pdb.data,writablerow)
 end
 
