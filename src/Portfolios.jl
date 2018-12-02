@@ -75,7 +75,7 @@ function buy(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
-    println("Could not find data for the ticker ", stock, " on the date ", date)
+    println("Could not find data for the ticker ", stock.symbol, " on the date ", date)
     return 0, :None
   end
   # check that the portfolio has enough capital to buy this amount of shares
@@ -104,11 +104,11 @@ end
 
 
 """
-  buy(portfolio, stocks, numshares, date, transfee, data, applyTransfee=true)
+  buy(portfolio, stocks, date, transfee, data, applyTransfee=true)
 
 Buys multiple stocks by querying the data for the prices and trading the amount of capital in the portfolio for the stock. This is done in the order of the stocks dictionary - the first item in the dictionary will be traded first (this is important if the portfolio is low on funds)
 """
-function buy(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
+function buy(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   #dictionary to store results of order attempts
   res = Dict{Ticker, Tuple}()
   #for each stock in the stocks dictionary, sell the num specified
@@ -120,6 +120,7 @@ function buy(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Flo
   # now subtract transaction fee
   portfolio.capital -= transfee
   return res
+end
 
 """
   sell(portfolio, stock, numshares, date, transfee, data, applyTransfee=true)
@@ -129,7 +130,7 @@ Sells numshares shares of the given stock by querying the data for the price and
 function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   # check that the portfolio has shares of this stock
   if haskey(portfolio.holdings, stock) == false
-    println("Shorting is not allowed, cannot sell ", stock," on date ", date)
+    println("Shorting is not allowed, cannot sell ", stock.symbol," on date ", date)
      return 0, :None
   end
   # check that the portfolio has as many shares as are requested to be sold
@@ -140,7 +141,7 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
   price = queryMarketDB(data, date, stock, :prc)
   # if the value cannot be found print the error statement and return the portfolio unchanged
   if ismissing(price)
-    println("Could not find data for the ticker ", stock, " on the date ", date)
+    println("Could not find data for the ticker ", stock.symbol, " on the date ", date)
     return 0, :None
   end
   price = price[1].value
@@ -160,11 +161,11 @@ function sell(portfolio::Portfolio, stock::Ticker, numshares::Float64, date::Dat
 end
 
 """
-  sell(portfolio, stocks, numshares, date, transfee, data, applyTransfee=true)
+  sell(portfolio, stocks, date, transfee, data, applyTransfee=true)
 
 Sells multiple stocks by querying the data for the prices and trading that amount of shares in the portfolio for the amount of capital it's worth. This is done in the orderof the stocks dictionary - the first item in the dictionary will be traded first
 """
-function sell(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Float64, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
+function sell(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, date::Date, transfee:: Float64, data::MarketDB, applyTransfee::Bool=true)
   #dictionary to store results of order attempts
   res = Dict{Ticker, Tuple}()
   #for each stock in the stocks dictionary, sell the num specified
@@ -176,6 +177,7 @@ function sell(portfolio::Portfolio, stocks::Dict{Ticker, Float64}, numshares::Fl
   # now subtract transaction fee
   portfolio.capital -= transfee
   return res
+end
 
 
 """
