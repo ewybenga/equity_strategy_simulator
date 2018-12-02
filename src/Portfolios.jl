@@ -4,7 +4,7 @@ include("./Tickers.jl")
 include("./queryfunctions.jl")
 
 
-export Portfolio, buy, sell
+export Portfolio, buy, sell, placeOrder, addDividend
 
 
 """
@@ -145,6 +145,27 @@ end
 
 Places an order of type buy or sell with a transaction fee on a given date to the portfolio. The orders will consist of a dictionary of ticker:numshares
 """
+function placeOrder(type::Symbol, transfee::Float64, date::Date, data::MarketDB, portfolio::Portfolio, orders::Dict{Ticker, Float64})
+  #dictionary to store results of order attempts
+  res = Dict{Ticker, Tuple}()
+  #for each stock in the order
+  for stock in keys(orders)
+    numshares = orders[stock]
+    # buy or sell
+    if type==:buy
+      curres = buy(portfolio, stock, numshares, date, transfee, data, false)
+    elseif type==:sell
+      curres = sell(portfolio, stock, numshares, date, transfee, data, false)
+    else
+      println("Neither buy nor sell was selected")
+      return res
+    end
+    res[stock] = curres
+  end
+  # now subtract transaction fee
+  portfolio.capital -= transfee
+  return res
+end
 
 """
   addDividend(date, data, portfolio)
