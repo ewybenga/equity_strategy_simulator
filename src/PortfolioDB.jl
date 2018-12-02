@@ -72,11 +72,13 @@ end
 gets the row in the portfolioDB containing the state of the portfolio and associated statistics on a given date
 """
 function getPortfolioState(pdb::PortfolioDB, date::Date)
+    # formulate query
     res = @from i in pdb.data begin
             @where i.date == date
             @select i
             @collect DataFrame
         end
+    # return missing if portfolio not in db for the given date
     if size(res)[1]==0
         return missing
     end

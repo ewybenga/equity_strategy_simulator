@@ -80,3 +80,34 @@ expensiveGoogle = Ticker(m, "Q", "GOOGL")
 @test sell(portfolioTest, tickerTest2, 1., Date(2016, 9, 6), 5., m) == (0., :None)
 @test portfolioTest.capital ≈ round(1000-200.77*4-57.67-30+780.08*4+202.83*4+57.61, digits=2)
 @test portfolioTest.holdings == Dict(tickerTest=>1)
+
+
+#PORTFOLIODB TESTS
+pdb = PortfolioDB(m)
+cols = string.(names(pdb.data))
+uniqueTickers = unique(m.data.ticker)
+# check correct columns initialized
+for t in uniqueTickers
+    @test t in cols
+end
+for s in ["date", "value", "return_cumulative", "return_annual", "volatility", "riskreward", "value"]
+    @test s in cols
+end
+# test writing to pdb
+d = Date(2016, 9, 6)
+writePortfolio(pdb, d, portfolioTest, .13, .56, evaluateValue(portfolioTest, d, m), .05, .13)
+@test size(pdb.data)[1]==1
+@test pdb.data[:date][1]==d
+@test pdb.data[:capital][1]==portfolioTest.capital
+@test pdb.data[:MSFT][1]==1.
+@test pdb.data[:value][1]==4156.11
+# buy a stock and write the next day
+buy(portfolioTest, tickerTest3, 3., Date(2016, 9, 7), 5., m)
+writePortfolio(pdb, d+Day(1), portfolioTest, .13, .56, evaluateValue(portfolioTest, d, m), .05, .13)
+@test size(pdb.data)[1]==2
+@test pdb.data[:MSFT][2]==1.
+@test pdb.data[:TSLA][2]==3.
+@test pdb.data[:capital][2]==portfolioTest.capital
+# test query on a certain day
+@test ismissing(getPortfolioState(pdb, d-Day(1)))
+@test getPortfolioState(pdb, d)[:capital][1]==4098.5
