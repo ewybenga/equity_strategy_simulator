@@ -1,7 +1,7 @@
 include("./MarketDB.jl")
 include("./Portfolios.jl")
 
-export PortfolioDB
+export PortfolioDB, writePortfolio, getPortfolioState
 
 """
 	PortfolioDB()
@@ -73,11 +73,12 @@ gets the row in the portfolioDB containing the state of the portfolio and associ
 """
 function getPortfolioState(pdb::PortfolioDB, date::Date)
     res = @from i in pdb.data begin
-            @where i["date"] == date
+            @where i.date == date
             @select i
             @collect DataFrame
         end
-    if size(res)[2]==0
+    if size(res)[1]==0
         return missing
     end
     return res
+end
