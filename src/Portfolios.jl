@@ -4,7 +4,7 @@ include("./Tickers.jl")
 include("./queryfunctions.jl")
 
 
-export Portfolio, buy, sell
+export Portfolio, buy, sell, placeOrder, addDividend
 
 
 """
@@ -16,6 +16,27 @@ The Portfolio object contains a dictionary of holdings (ticker:number of shares)
 mutable struct Portfolio
     holdings::Dict{Ticker, Float64}
     capital::Float64
+end
+
+"""
+overwrite show for dict of ticker=>float64
+"""
+function Base.show(io::IO, holdings::Dict{Ticker, Float64})
+  linelen=30
+  dashline = "|"*'-'^(linelen-2)*"|\n"
+  s = '-'^linelen*'\n'
+  l = "|holdings:"
+  l = l*' '^(linelen-1-length(l))*"|\n"
+  s=s*l
+  for h in holdings
+      l = "|   "
+      t = h[1]
+      l = l*string(t.symbol)*"("*t.exchange*"): "*string(h[2])*" shares"
+      l = l*' '^(linelen-length(l)-1)*"|\n"
+      s = s*l
+  end
+  s = s*dashline
+    print(io, s)
 end
 
 """
@@ -124,6 +145,27 @@ end
 
 Places an order of type buy or sell with a transaction fee on a given date to the portfolio. The orders will consist of a dictionary of ticker:numshares
 """
+function placeOrder(type::Symbol, transfee::Float64, date::Date, data::MarketDB, portfolio::Portfolio, orders::Dict{Ticker, Float64})
+  #dictionary to store results of order attempts
+  res = Dict{Ticker, Tuple}()
+  #for each stock in the order
+  for stock in keys(orders)
+    numshares = orders[stock]
+    # buy or sell
+    if type==:buy
+      curres = buy(portfolio, stock, numshares, date, transfee, data, false)
+    elseif type==:sell
+      curres = sell(portfolio, stock, numshares, date, transfee, data, false)
+    else
+      println("Neither buy nor sell was selected")
+      return res
+    end
+    res[stock] = curres
+  end
+  # now subtract transaction fee
+  portfolio.capital -= transfee
+  return res
+end
 
 """
   addDividend(date, data, portfolio)
