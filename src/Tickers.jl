@@ -57,3 +57,20 @@ struct Ticker
         end
     end
 end
+
+"""
+overwriting show for Tickers to show pretty version
+"""
+function Base.show(io::IO, t::Ticker)
+    linelen = 20
+    t = tickerTest
+    s = '-'^linelen
+    n = t.symbol*" ("*t.exchange*")"
+    nspaces = linelen-2-length(n)
+    n = '|'*n*' '^nspaces*'|'*'\n'
+    s = s*'\n'*n*s*'\n'
+    ds = "|start: "*string(t.start_date)*" |\n"
+    de = "|end:   "*string(t.end_date)*" |\n"
+    s=s*ds*de*'|'*'_'^(linelen-2)*"|"
+    print(io, s)
+end
