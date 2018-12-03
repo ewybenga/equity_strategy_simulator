@@ -188,8 +188,10 @@ Calculates the accumulated dividends accross all holdings in a profile and adds 
 function addDividend(date::Date, data::MarketDB, portfolio::Portfolio)
     for holding in portfolio.holdings
         i = queryMarketDB(data, date, holding[1], :divamt)
-        if i == 0.
-            continue
+        if ismissing(i) || i==0.
+          continue
+        #elseif i == 0.
+        #    continue
         else
             portfolio.capital += i[1]*holding[2]
         end

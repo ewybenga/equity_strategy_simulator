@@ -6,6 +6,30 @@ include("./MarketDB.jl")
 export evaluateValue
 
 """
+  getMostRecentPrice(mdb, date, stock, ndays)
+
+Gets the price of the stock on the most recently traded day to "date". Search within last ndays (defaults to 15 days or num days since start of MarketDB). Assumes stock is traded on first day of MarketDB (this is a somewhat strict assumption)
+"""
+function getMostRecentPrice(mdb::MarketDB, date::Date, stock::Ticker, ndays::Int64=15)
+  currPrice = queryMarketDB(mdb, date, stock, :prc)
+  # if not traded on that day find most recent traded at price
+  if ismissing(currPrice)
+    # check that not within first 15 days or modify bounds
+    minDate = minimum(unique(mdb.data[:date]))
+    daysFromMin = date - minDate
+    if daysFromMin < Day(ndays)
+      ndays = daysFromMin
+    end
+    # find most recent trade date - assumes it has traded within the last 15 days
+    recentPrices = queryMarketDB(mdb, date-Day(ndays), date, stock, :prc)
+    currPrice = pop!(recentPrices).value
+  else
+    currPrice = currPrice[1].value
+  end
+  return currPrice
+end
+
+"""
   evaluateValue(portfolio, date, data)
 
 Evaluates the value of a portfolio on a given date using the MarketDB object as the datasource.
@@ -15,14 +39,8 @@ function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
   val = portfolio.capital
   # iterate through portfolio and add value of each stock on that day
   for stock in keys(portfolio.holdings)
-    currPrice = queryMarketDB(data, date, stock, :prc)
-    # if not traded on that day find most recent traded at price
-    if ismissing(currPrice)
-      # find most recent trade date - assumes it has traded within the last 15 days
-      recentPrices = queryMarketDB(data, date-Day(15), date, stock, :prc)
-      currPrice = pop!(recentPrices)
-    end
-    val += currPrice[1].value * portfolio.holdings[stock]
+    currPrice = getMostRecentPrice(data, date, stock)
+    val += currPrice * portfolio.holdings[stock]
   end
   return round(val, digits=2)
 end

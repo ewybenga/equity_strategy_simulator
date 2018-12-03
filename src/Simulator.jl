@@ -35,3 +35,9 @@ function update(simulator::Simulator, strategy::Strategy, curr_date::Date)
     # write day statistics to the portfolio database
     writePortfolio(strategy.pdb, curr_date, strategy.portfolio, volatility, riskreward, value, annual_return, cumulative_return)
 end
+
+"""
+    run(simulator)
+"""
+function run(simulator::Simulator)
+end
