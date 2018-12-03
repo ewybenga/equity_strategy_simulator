@@ -9,12 +9,13 @@ This is the structure for a Strategy object. It must have a function that dictat
     processInfo(marketData::MarketDB, date::Date, portfolioData::PortfolioDB, portfolio::Portfolio, transfee::Float64)
 """
 mutable struct Strategy
+    name::String
     processInfo::Function
     portfolio::Portfolio
     pdb::PortfolioDB
-    function Strategy(processInfo::Function, portfolio::Portfolio, mdb::MarketDB)
+    function Strategy(name::String, processInfo::Function, portfolio::Portfolio, mdb::MarketDB)
         pdb = PortfolioDB(mdb)
-        return new(processInfo, portfolio, pdb)
+        return new(name, processInfo, portfolio, pdb)
     end
 
 end
@@ -32,6 +33,23 @@ function Example1(marketData, date, portfolioData, portfolio, transfee)
     else
         numShares = floor(portfolio.capital/price[1].value)
         buy(portfolio, goog, numShares, date, transfee, marketData)
+    end
+    return
+end
+
+"""
+    ExampleStrategy2()
+
+Defines a strategy to hold google and buy google if it has the cash
+"""
+function Example2(marketData, date, portfolioData, portfolio, transfee)
+    netflix = Ticker(marketData, "Q", "NFLX")
+    price = queryMarketDB(marketData, date, netflix, :prc)
+    if ismissing(price)
+        return
+    else
+        numShares = floor(portfolio.capital/price[1].value)
+        buy(portfolio, netflix, numShares, date, transfee, marketData)
     end
     return
 end

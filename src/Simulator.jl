@@ -2,6 +2,7 @@ include("MarketDB.jl")
 include("portfoliostats.jl")
 include("Portfolios.jl")
 include("PortfolioDB.jl")
+include("Strategies.jl")
 
 export run
 
