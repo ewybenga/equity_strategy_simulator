@@ -3,6 +3,8 @@ include("portfoliostats.jl")
 include("Portfolios.jl")
 include("PortfolioDB.jl")
 
+export run
+
 """
     Simulator(mdb, start_date, end_date, strategies)
 
@@ -39,5 +41,16 @@ end
 """
     run(simulator)
 """
-function run(simulator::Simulator)
+function runSim(simulator::Simulator)
+    all_dates = @from i in simulator.mdb.data begin
+    @where i.date >= simulator.start_date && i.date <= simulator.end_date
+    @select i.date
+    @collect
+    end
+    all_dates = unique(all_dates)
+    for date in all_dates
+        for strategy in simulator.strategies
+            update(simulator, strategy, date)
+        end
+    end
 end
