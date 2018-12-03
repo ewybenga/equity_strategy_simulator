@@ -33,6 +33,10 @@ end
 Compute the cumulative return of the portfolio since the start date. Formula is (p_current/p_initial)-1
 """
 function computeCumulativeReturn(portfolio::Portfolio, date::Date, pdb::PortfolioDB, mdb::MarketDB)
+  # handle first day
+  if size(pdb.data)[1] == 0
+    return 0.
+  end
   # find initial value
   p_initial = pdb.data[1,:value]
   # find current value
@@ -46,11 +50,15 @@ end
 
 Compute the annualized return of the portfolio since the start date using formula Ra = ( (1 + Rc) ^ (1/n) ) – 1
 """
-function computeAnnualizedReturn(portfolio::Portfolio, date::Date, data::PortfolioDB, mdb::MarketDB)
+function computeAnnualizedReturn(portfolio::Portfolio, date::Date, pdb::PortfolioDB, mdb::MarketDB)
+  # handle first day
+  if size(pdb.data)[1] == 0
+    return 0.
+  end
   # get number of years the portfolio has existed
-  numYears = (date-data.data[:date][1]).value/365.
+  numYears = (date-pdb.data[:date][1]).value/365.
   # compute annualized return
-  return (1+computeCumulativeReturn(portfolio, date, data, mdb))^(1/numYears)-1
+  return (1+computeCumulativeReturn(portfolio, date, pdb, mdb))^(1/numYears)-1
 end
 
 """
@@ -67,6 +75,6 @@ end
 
 Compute the sharpe ratio, or risk reward ratio, using the formula sharperatio = (portfolioreturn-riskfreerate)/(stdev of portfolios excess return)
 """
-function computeSharpeRatio(portfolio::Portfolio, date::Date, riskfreerate::Float64, data::PortfolioDB)
-  return 10
+function computeRiskReward(portfolio::Portfolio, date::Date, riskfreerate::Float64, data::PortfolioDB)
+  return 10.
 end

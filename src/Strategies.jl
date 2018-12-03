@@ -1,5 +1,6 @@
 include("./Portfolios.jl")
 include("./Tickers.jl")
+include("./PortfolioDB.jl")
 
 """
     Strategy(processInfo, portfolio)
@@ -7,9 +8,15 @@ include("./Tickers.jl")
 This is the structure for a Strategy object. It must have a function that dictates what action(s) to take on a portfolio when a new day of information is available. The processInfo function must be designed such that it takes in the following arguments:
     processInfo(marketData::MarketDB, date::Date, portfolioData::PortfolioDB, portfolio::Portfolio, transfee::Float64)
 """
-struct Strategy
-    processInfo::AnonymousFunction
-    portfolio::Portfolios
+mutable struct Strategy
+    processInfo::Function
+    portfolio::Portfolio
+    pdb::PortfolioDB
+    function Strategy(processInfo::Function, portfolio::Portfolio, mdb::MarketDB)
+        pdb = PortfolioDB(mdb)
+        return new(processInfo, portfolio, pdb)
+    end
+
 end
 
 """
@@ -25,5 +32,6 @@ function Example1(marketData, date, portfolioData, portfolio, transfee)
     else
         numShares = floor(portfolio.capital/price[1].value)
         buy(portfolio, goog, numShares, date, transfee, marketData)
+    end
     return
 end
