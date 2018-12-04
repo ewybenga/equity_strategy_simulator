@@ -35,7 +35,7 @@ function PlotHoldingForStrategy(strat::Strategy)
     # get y values
     ys = []
     linenames = []
-    for stock in names(strat.pdb.data[8:length(r.data)])
+    for stock in names(strat.pdb.data[8:length(strat.pdb.data)])
         if sum(strat.pdb.data[stock]) > 0
             push!(ys, strat.pdb.data[stock])
             push!(linenames, stock)
