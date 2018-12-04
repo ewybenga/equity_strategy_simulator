@@ -1,4 +1,5 @@
 using Dates
+using Statistics
 include("./Portfolios.jl")
 include("./PortfolioDB.jl")
 include("./MarketDB.jl")
@@ -74,25 +75,29 @@ function computeAnnualizedReturn(portfolio::Portfolio, date::Date, pdb::Portfoli
     return 0.
   end
   # get number of years the portfolio has existed
-  numYears = (date-pdb.data[:date][1]).value/365.
+  numYears = (365.)/(date-pdb.data[:date][1]).value
   # compute annualized return
   return (1+computeCumulativeReturn(portfolio, date, pdb, mdb))^(1/numYears)-1
 end
 
 """
-  computeVolatility(portfolio, date, data)
+  computeVolatility(curr_annual_return, date, data)
 
 Compute the volatility of the portfolio since the start date
 """
-function computeVolatility(portfolio::Portfolio, date::Date, data::PortfolioDB)
-  return .1
+function computeVolatility(curr_annual_return::Float64, data::PortfolioDB)
+  rets = data.data[:return_annual]
+  push!(rets, curr_annual_return)
+  return std(rets)
 end
 
 """
-  computeSharpeRatio(portfolio, date, riskfreerate, data)
+  computeRiskReward(portfolio, date, riskfreerate, data)
 
 Compute the sharpe ratio, or risk reward ratio, using the formula sharperatio = (portfolioreturn-riskfreerate)/(stdev of portfolios excess return)
+
+Default: assume risk free rate is 0
 """
-function computeRiskReward(portfolio::Portfolio, date::Date, riskfreerate::Float64, data::PortfolioDB)
-  return 10.
+function computeRiskReward(curr_annual_return::Float64, curr_volatility::Float64, risk_free_rate::Float64=0.0)
+  return (curr_annual_return - risk_free_rate)/curr_volatility
 end

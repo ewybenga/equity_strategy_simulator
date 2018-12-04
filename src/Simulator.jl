@@ -33,8 +33,8 @@ function update(simulator::Simulator, strategy::Strategy, curr_date::Date)
     value = evaluateValue(strategy.portfolio, curr_date, simulator.mdb)
     cumulative_return = computeCumulativeReturn(strategy.portfolio, curr_date, strategy.pdb, simulator.mdb)
     annual_return = computeAnnualizedReturn(strategy.portfolio, curr_date, strategy.pdb, simulator.mdb)
-    volatility = computeVolatility(strategy.portfolio, curr_date, strategy.pdb)
-    riskreward = computeRiskReward(strategy.portfolio, curr_date,0.02, strategy.pdb)
+    volatility = computeVolatility(annual_return, strategy.pdb)
+    riskreward = computeRiskReward(annual_return, volatility)
     # write day statistics to the portfolio database
     writePortfolio(strategy.pdb, curr_date, strategy.portfolio, volatility, riskreward, value, annual_return, cumulative_return)
 end
