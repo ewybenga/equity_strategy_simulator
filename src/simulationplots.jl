@@ -6,7 +6,7 @@ include("Strategies.jl")
 
 Purpose: Generates a plot showing the values for the given column for all strategies in an array of strats
 """
-function PlotColumnForStrats(strats::Array{Strategy, 1}, col)
+function PlotColumnForStrats(strats::Array{Strategy, 1}, col::Symbol, s::Bool=true)
     # get dates
     x = strats[1].pdb.data.date
     # get y values
@@ -18,7 +18,9 @@ function PlotColumnForStrats(strats::Array{Strategy, 1}, col)
     ylab = titlecase(string(col))
     t = ylab*" Over Time"
     pl = plot(x, ys, title=t, xlabel=xlab, ylabel=ylab, label=linenames)
-    savefig(pl, "$t.png")
+    if s
+        savefig(pl, "$t.png")
+    end
     return pl
 end
 

@@ -3,6 +3,8 @@ include("portfoliostats.jl")
 include("Portfolios.jl")
 include("PortfolioDB.jl")
 include("Strategies.jl")
+include("simulationplots.jl")
+using Plots
 
 export run
 
@@ -43,15 +45,27 @@ end
     run(simulator)
 """
 function runSim(simulator::Simulator)
+    gr(show=:ijulia)
     all_dates = @from i in simulator.mdb.data begin
     @where i.date >= simulator.start_date && i.date <= simulator.end_date
     @select i.date
     @collect
     end
     all_dates = unique(all_dates)
+    # set up plot
+    start = minimum(all_dates)
+    stratNames = [s.name for s in simulator.strategies]
+    stratNames = reshape(stratNames, (1, size(stratNames)[1]))
+    initialDate = (start-Day(2)):Day(1):(start-Day(1))
+    initialData = [zeros(2) for i in 1:length(simulator.strategies)]
+    plt = plot(initialDate, initialData, title="Cumulative Return over Time", xlabel="Date", ylabel="Cumulative Return", label=stratNames)
     for date in all_dates
         for strategy in simulator.strategies
             update(simulator, strategy, date)
         end
+        # add data to plot
+        annRets = [s.pdb.data[:return_cumulative][length(s.pdb.data[:return_cumulative])] for s in simulator.strategies]
+        push!(plt, Dates.value(date), annRets)
+        display(plt)
     end
 end
