@@ -87,7 +87,7 @@ Compute the volatility of the portfolio since the start date
 """
 function computeVolatility(curr_annual_return::Float64, data::PortfolioDB)
   rets = data.data[:return_annual]
-  push!(rets, curr_annual_return)
+  push!(copy(rets), curr_annual_return)
   return std(rets)
 end
 
