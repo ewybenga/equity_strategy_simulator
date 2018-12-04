@@ -26,7 +26,7 @@ Update the state of a strategy in a simulator on a given date. This includes upd
 """
 function update(simulator::Simulator, strategy::Strategy, curr_date::Date)
     # update day's allocations
-    strategy.processInfo(simulator.mdb, curr_date, strategy.pdb,     strategy.portfolio, simulator.transaction_fee)
+    strategy.processInfo(simulator.mdb, curr_date, strategy.pdb,     strategy.portfolio, simulator.transaction_fee, strategy.otherData)
     # add dividends
     addDividend(curr_date, simulator.mdb, strategy.portfolio)
     # compute portfolio stats
