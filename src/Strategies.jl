@@ -28,7 +28,7 @@ end
 Defines a strategy to hold google and buy google if it has the cash
 """
 function Example1(marketData, date, portfolioData, portfolio, transfee, otherData)
-    goog = Ticker(marketData, "Q", "GOOG")
+    goog = Ticker(marketData, "Q", "MSFT")
     price = queryMarketDB(marketData, date, goog, :prc)
     if ismissing(price)
         return
@@ -74,11 +74,11 @@ function buyDropSellGain(marketData, date, portfolioData, portfolio, transfee, o
         return (p_current/p_yesterday) - 1.
     end
 
-    goog = Ticker(marketData, "Q", "GOOG")
+    goog = Ticker(marketData, "Q", "MSFT")
 
     returns = Float64[]
     for date in date-Day(5):Day(1):date
-        append!(returns, computeDailyReturnPerShare(p, date, m, goog))
+        append!(returns, computeDailyReturnPerShare(portfolio, date, marketData, goog))
     end
     sumval = 0.
     sumval = sum(returns)

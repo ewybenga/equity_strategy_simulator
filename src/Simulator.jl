@@ -56,7 +56,6 @@ function runSim(simulator::Simulator, live_plot::Bool=false)
     all_dates = unique(all_dates)
     if live_plot
         # set up plot
-        gr(show=:ijulia)
         start = minimum(all_dates)
         xlim = [Dates.value(start-Day(2)), Dates.value(maximum(all_dates))]
         stratNames = [s.name for s in simulator.strategies]
