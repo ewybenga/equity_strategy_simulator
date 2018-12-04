@@ -74,8 +74,14 @@ function computeAnnualizedReturn(portfolio::Portfolio, date::Date, pdb::Portfoli
   if size(pdb.data)[1] == 0
     return 0.
   end
-  # get number of years the portfolio has existed
-  numYears = (365.)/(date-pdb.data[:date][1]).value
+  #behavior for less than 1 year
+  numDays = (date-pdb.data[:date][1]).value
+  if numDays<=365.
+      numYears = (365.)/numDays
+  else
+    # get number of years the portfolio has existed
+    numYears = numDays/(365.)
+  end
   # compute annualized return
   return (1+computeCumulativeReturn(portfolio, date, pdb, mdb))^(1/numYears)-1
 end
