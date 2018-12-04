@@ -32,7 +32,7 @@ TYPE | Date   |    String   |     String     |  Float64    | U{Missing,  |
 """
 function processData(filepath)
     # read data using DelimitedFiles
-    data = readdlm(filepath, ',')
+    data = readdlm(filepath, ',' ,'\r')
     # read this into a DataFrame
     df = DataFrame(data[2:size(data)[1], :])
     # change column names to symbols of first row

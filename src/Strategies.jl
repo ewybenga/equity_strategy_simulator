@@ -55,3 +55,20 @@ function Example2(marketData, date, portfolioData, portfolio, transfee)
     end
     return
 end
+
+"""
+    SandPBaseline()
+
+Defines a strategy to hold the S&P 500 and buy it if it has cash
+"""
+function SandP(marketData, date, portfolioData, portfolio, transfee)
+    sp = Ticker(marketData, "SP", "SP500")
+    price = queryMarketDB(marketData, date, sp, :prc)
+    if ismissing(price)
+        return
+    else
+        numShares = floor(portfolio.capital/price[1].value)
+        buy(portfolio, sp, numShares, date, transfee, marketData)
+    end
+    return
+end
