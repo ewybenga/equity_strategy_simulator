@@ -3,6 +3,8 @@ include("Strategies.jl")
 
 """
 	PlotColumnForStrats(strats, col)
+
+Purpose: Generates a plot showing the values for the given column for all strategies in an array of strats
 """
 function PlotColumnForStrats(strats::Array{Strategy, 1}, col)
     # get dates
@@ -15,6 +17,35 @@ function PlotColumnForStrats(strats::Array{Strategy, 1}, col)
     xlab = "Date"
     ylab = titlecase(string(col))
     t = ylab*" Over Time"
-    display(plot(x, ys, title=t, xlabel=xlab, ylabel=ylab, label=linenames))
-    
+    pl = plot(x, ys, title=t, xlabel=xlab, ylabel=ylab, label=linenames)
+    savefig(pl, "$t.png")
+    return pl
+end
+
+"""
+    PlotHoldingForStrategy(strat)
+
+Purpose: Generates a plot showing the number of holdings over time for a given strategy
+"""
+function PlotHoldingForStrategy(strat::Strategy)
+    # get dates
+    x = strat.pdb.data.date
+    # get y values
+    ys = []
+    linenames = []
+    for stock in names(strat.pdb.data[8:length(r.data)])
+        if sum(strat.pdb.data[stock]) > 0
+            push!(ys, strat.pdb.data[stock])
+            push!(linenames, stock)
+        end
+    end
+    # formatting vars
+    linenames = reshape(linenames, (1, size(linenames)[1]))
+    xlab = "Date"
+    ylab = "Holdings"
+    name = strat.name
+    t = "$name Holdings Over Time"
+    pl = plot(x, ys, title=t, xlabel=xlab, ylabel=ylab, label=linenames)
+    savefig(pl, "$t.png")
+    return pl
 end
