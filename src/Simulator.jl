@@ -45,7 +45,9 @@ function update(simulator::Simulator, strategy::Strategy, curr_date::Date)
 end
 
 """
-    run(simulator)
+    runSim(simulator, live_plot=false)
+
+This is the main function that runs the simulation for each strategy in the simulator over the date range specified in the simulator. If live_plot is set to true live visualizations are shown as the simulation progresses. The portfolio database for each strategy is written out at the end of the simulation, and the updated state of the Simulator is returned
 """
 function runSim(simulator::Simulator, live_plot::Bool=false)
     #get date range to plot over

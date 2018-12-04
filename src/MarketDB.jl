@@ -30,7 +30,7 @@ TYPE | Date   |    String   |     String     |  Float64    | U{Missing,  |
      |________|_____________|________________|_____________|___Float64}__|
 
 """
-function processData(filepath)
+function processData(filepath::String)
     # read data using DelimitedFiles
     data = readdlm(filepath, ',' ,'\r')
     # read this into a DataFrame

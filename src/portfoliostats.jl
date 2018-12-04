@@ -47,7 +47,7 @@ function evaluateValue(portfolio::Portfolio, date::Date, data::MarketDB)
 end
 
 """
-  computeCumulativeReturn(portfolio, date, data)
+  computeCumulativeReturn(portfolio, date, pdb, mdb)
 
 Compute the cumulative return of the portfolio since the start date. Formula is (p_current/p_initial)-1
 """
@@ -65,7 +65,7 @@ function computeCumulativeReturn(portfolio::Portfolio, date::Date, pdb::Portfoli
 end
 
 """
-  computeAnnualizedReturn(portfolio, date, data)
+  computeAnnualizedReturn(portfolio, pdb, mdb, data)
 
 Compute the annualized return of the portfolio since the start date using formula Ra = ( (1 + Rc) ^ (1/n) ) – 1
 """
@@ -87,7 +87,7 @@ function computeAnnualizedReturn(portfolio::Portfolio, date::Date, pdb::Portfoli
 end
 
 """
-  computeVolatility(curr_annual_return, date, data)
+  computeVolatility(curr_annual_return, data)
 
 Compute the volatility of the portfolio since the start date
 """
@@ -98,7 +98,7 @@ function computeVolatility(curr_annual_return::Float64, data::PortfolioDB)
 end
 
 """
-  computeRiskReward(portfolio, date, riskfreerate, data)
+  computeRiskReward(curr_annual_return, curr_volatility, risk_free_rate)
 
 Compute the sharpe ratio, or risk reward ratio, using the formula sharperatio = (portfolioreturn-riskfreerate)/(stdev of portfolios excess return)
 
