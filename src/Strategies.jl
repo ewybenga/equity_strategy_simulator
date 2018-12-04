@@ -77,7 +77,7 @@ function buyDropSellGain(marketData, date, portfolioData, portfolio, transfee, o
     goog = Ticker(marketData, "Q", "MSFT")
 
     returns = Float64[]
-    for date in date-Day(5):Day(1):date
+    for date in date-Day(7):Day(1):date
         append!(returns, computeDailyReturnPerShare(portfolio, date, marketData, goog))
     end
     sumval = 0.
@@ -90,7 +90,7 @@ function buyDropSellGain(marketData, date, portfolioData, portfolio, transfee, o
             numShares = floor(portfolio.capital/price[1].value)
             buy(portfolio, goog, numShares, date, transfee, marketData)
         end
-    elseif sumval >= 0.05
+    elseif sumval >= 0.07
         price = queryMarketDB(marketData, date, goog, :prc)
         if ismissing(price)
             return

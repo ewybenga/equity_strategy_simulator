@@ -6,6 +6,7 @@ include("Strategies.jl")
 include("simulationplots.jl")
 using Plots
 using Colors
+using CSV
 
 export run
 
@@ -104,4 +105,9 @@ function runSim(simulator::Simulator, live_plot::Bool=false)
             display(plt)
         end
     end
+    #write out finalized pdbs
+    for strategy in simulator.strategies
+        CSV.write(strategy.name*".csv", strategy.pdb.data)
+    end
+    return simulator
 end
