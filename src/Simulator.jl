@@ -5,6 +5,7 @@ include("PortfolioDB.jl")
 include("Strategies.jl")
 include("simulationplots.jl")
 using Plots
+using Colors
 
 export run
 
@@ -39,20 +40,21 @@ function update(simulator::Simulator, strategy::Strategy, curr_date::Date)
     riskreward = computeRiskReward(annual_return, volatility)
     # write day statistics to the portfolio database
     writePortfolio(strategy.pdb, curr_date, strategy.portfolio, volatility, riskreward, value, annual_return, cumulative_return)
-    return value, cumulative_return, annual_return, volatility, riskreward
+    return [value, cumulative_return, annual_return, volatility, riskreward]
 end
 
 """
     run(simulator)
 """
-function runSim(simulator::Simulator, plot::Bool=false)
+function runSim(simulator::Simulator, live_plot::Bool=false)
+    #get date range to plot over
     all_dates = @from i in simulator.mdb.data begin
     @where i.date >= simulator.start_date && i.date <= simulator.end_date
     @select i.date
     @collect
     end
     all_dates = unique(all_dates)
-    if plot
+    if live_plot
         # set up plot
         gr(show=:ijulia)
         start = minimum(all_dates)
@@ -61,16 +63,45 @@ function runSim(simulator::Simulator, plot::Bool=false)
         stratNames = reshape(stratNames, (1, size(stratNames)[1]))
         initialDate = (start-Day(2)):Day(1):(start-Day(1))
         initialData = [zeros(2) for i in 1:length(simulator.strategies)]
-        plt = plot(initialDate, initialData, title="Cumulative Return over Time", xlabel="Date", ylabel="Cumulative Return", label=stratNames, xlims=xlim)
+        pltRet = plot(initialDate, initialData, title="Cumulative Return over Time", xlabel="Date", ylabel="Cumulative Return", label=stratNames, xlims=xlim, legend=:false)
+        pltRR = plot(initialDate, initialData, title="Risk Reward over Time", xlabel="Date", ylabel="Risk Reward", label=stratNames, xlims=xlim, legend=:false)
+        stratLegend = plot(initialDate, initialData, labels=stratNames, grid=false, showaxis=false, xlims=(1, 2), title="Strategy Legend")
+        # add allocation plots for each strategy
+        stratPlots = []
+        numStocks = length(simulator.strategies[1].pdb.data)-7
+        stockColors = distinguishable_colors(numStocks, lchoices=range(30, 100))
+        stockNames = string.(names(simulator.strategies[1].pdb.data)[8:(numStocks+8-1)])
+        initialData = [zeros(2) for i in 1:numStocks]
+        stockLegend = plot(initialDate, initialData, labels=stockNames, grid=false, showaxis=false, xlims=(1, 2), title="Holdings Legend", color_palette=stockColors)
+        for currs in simulator.strategies
+            s = plot(initialDate, initialData, title=currs.name*" Holdings Over Time", xlabel="Date", ylabel="Number of Shares", xlims=xlim, legend=false, color_palette=stockColors)
+            push!(stratPlots, s)
+        end
+        # create master plot
+        l2 = @layout [a{.3h}; b{.7h}]
+        legends = plot(stratLegend, stockLegend, layout=l2)
+        l = @layout [grid(length(simulator.strategies), 1) c{.17w} grid(2, 1)]
+        plt = plot(stratPlots..., legends, pltRet, pltRR, layout=l, size=[1200, 800], linewidth=3)
     end
+    currData = Dict(s.name=>Float64[] for s in simulator.strategies)
     for date in all_dates
         for strategy in simulator.strategies
-            update(simulator, strategy, date)
+            currData[strategy.name] = update(simulator, strategy, date)
         end
-        if plot
+        if live_plot
             # add data to plot
-            annRets = [s.pdb.data[:return_cumulative][length(s.pdb.data[:return_cumulative])] for s in simulator.strategies]
-            push!(plt, Dates.value(date), annRets)
+            rets = [currData[k][2] for k in keys(currData)]
+            rrs = [currData[k][5] for k in keys(currData)]
+            push!(pltRet, Dates.value(date), rets)
+            push!(pltRR, Dates.value(date), rrs)
+            #push current allocations to plot
+            ctr=1
+            for strategy in simulator.strategies
+                currHoldings = getPortfolioState(strategy.pdb, date)[8:length(strategy.pdb.data)]
+                currHoldings = convert(Array, currHoldings)[1, :]
+                push!(stratPlots[ctr], Dates.value(date), currHoldings)
+                ctr+=1
+            end
             display(plt)
         end
     end

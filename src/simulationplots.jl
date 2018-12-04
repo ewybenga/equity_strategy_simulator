@@ -29,7 +29,7 @@ end
 
 Purpose: Generates a plot showing the number of holdings over time for a given strategy
 """
-function PlotHoldingForStrategy(strat::Strategy)
+function PlotHoldingForStrategy(strat::Strategy, save::Bool=true)
     # get dates
     x = strat.pdb.data.date
     # get y values
@@ -48,6 +48,8 @@ function PlotHoldingForStrategy(strat::Strategy)
     name = strat.name
     t = "$name Holdings Over Time"
     pl = plot(x, ys, title=t, xlabel=xlab, ylabel=ylab, label=linenames)
-    savefig(pl, "$t.png")
+    if save
+        savefig(pl, "$t.png")
+    end
     return pl
 end
