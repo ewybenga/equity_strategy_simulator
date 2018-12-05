@@ -47,7 +47,7 @@ function processData(filepath::String)
     df[:ticker] = string.(df[:ticker])
     # delete unnecessary columns
     extraCols = [n for n in names(df) if !any(x->x==n, [:date, :ticker, :divamt, :primexch, :prc])]
-    deletecols!(df, extraCols)
+    delete!(df, extraCols)
     return df
 end
 
