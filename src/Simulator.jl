@@ -92,8 +92,8 @@ function runSim(simulator::Simulator, live_plot::Bool=false)
         end
         if live_plot
             # add data to plot
-            rets = [currData[k][2] for k in keys(currData)]
-            rrs = [currData[k][5] for k in keys(currData)]
+            rets = [currData[s.name][2] for s in simulator.strategies]
+            rrs = [currData[s.name][5] for s in simulator.strategies]
             push!(pltRet, Dates.value(date), rets)
             push!(pltRR, Dates.value(date), rrs)
             #push current allocations to plot
