@@ -14,6 +14,9 @@ Colors => v"0.9.5"
 DataFrames => v"0.14.1"   
 Plots => v"0.21.0"   
 Query => v"0.10.1"   
+    
+See Project.toml and Manifest.toml for more information.
+    
 
 
 ## Obtaining Data
