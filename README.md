@@ -1,5 +1,21 @@
 # Equity Strategy Simulator
 
+## Required Software
+julia-1.0   
+    
+**Included Packages**    
+CSV   
+Dates   
+DelimitedFiles   
+Statistics     
+     
+**Other Packages**   
+Colors => v"0.9.5"   
+DataFrames => v"0.14.1"   
+Plots => v"0.21.0"   
+Query => v"0.10.1"   
+
+
 ## Obtaining Data
 Daily data from CRSP (the Center for Research in Security Prices) from WRDS (Wharton Research Data Services) is used, although other data sources could be used with slight modifications in the src/MarketDB.jl file under processData. It would still need to be a csv with column headers date (the price of the security on that date), ticker (the ticker symbol), primexch (the exchange the security is traded on), divamt (the amount of the dividend issued by that security on the date), and prc (the price of the security on the date).    
     
